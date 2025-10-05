@@ -1,0 +1,26 @@
+.rectangle {
+  position: absolute;
+  cursor: move;
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.album-art {
+  width: 80px;
+  height: 80px;
+  background-color: #555;
+  cursor: pointer;
+}
+
+.song-info {
+  margin-left: 10px;
+}
+
+.song-title {
+  font-weight: bold;
+}
+
+.artist-name {
+  color: #555;
+}
