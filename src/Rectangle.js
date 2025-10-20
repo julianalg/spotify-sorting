@@ -1,9 +1,9 @@
 import React from 'react';
 import './Rectangle.css';
 
-const Rectangle = ({ rect, onMouseDown }) => {
+const Rectangle = ({ rect, onMouseDown, onPlaySong }) => {
   const handleAlbumArtClick = () => {
-    console.log('Album art clicked!');
+    onPlaySong(rect.song);
   };
 
   return (
