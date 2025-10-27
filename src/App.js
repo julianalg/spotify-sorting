@@ -7,6 +7,8 @@ import './App.css';
 function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [selectedAttribute, setSelectedAttribute] = useState(null);
+  const [filter, setFilter] = useState(null);
+  const [playingSong, setPlayingSong] = useState(null);
 
   const handleCloseSplash = () => {
     setShowSplash(false);
@@ -24,14 +26,12 @@ function App() {
     setSelectedAttribute(null);
   };
 
-  const [filter, setFilter] = useState(null);
-
   return (
     <div className="App">
       {showSplash && <SplashScreen onClose={handleCloseSplash} />}
       {selectedAttribute && <AttributeSplashScreen attribute={selectedAttribute} onClose={handleCloseAttributeSplash} />}
       <div className={`main-content ${showSplash ? 'blurred' : ''}`}>
-        <Palette filter={filter} />
+        <Palette filter={filter} playingSong={playingSong} setPlayingSong={setPlayingSong} />
       </div>
       <footer className="app-footer">
         <button onClick={() => { setFilter('danceability'); handleAttributeClick('danceability'); }}>Danceability</button>

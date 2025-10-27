@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Rectangle from './Rectangle';
 import './Palette.css';
 
-const Palette = ({ filter }) => {
+const Palette = ({ filter, playingSong, setPlayingSong }) => {
   const [rectangles, setRectangles] = useState([]);
   const [originalRectangles, setOriginalRectangles] = useState([]);
   const [dragging, setDragging] = useState(null);
@@ -89,22 +89,26 @@ const Palette = ({ filter }) => {
   };
 
   const handlePlaySong = (song) => {
-    console.log("Playing song:", song);
-    if (audio) {
-      console.log("Pausing previous audio");
-      audio.pause();
+    if (playingSong && playingSong.title === song.title) {
+      if (audio) {
+        audio.pause();
+      }
+      setPlayingSong(null);
+    } else {
+      if (audio) {
+        audio.pause();
+      }
+      const newAudio = new Audio(song.previewUrl);
+      newAudio.addEventListener('error', (e) => {
+        console.error("Audio Error:", e);
+      });
+      newAudio.play().then(() => {
+        setPlayingSong(song);
+      }).catch(error => {
+        console.error("Playback Error:", error);
+      });
+      setAudio(newAudio);
     }
-    const newAudio = new Audio(song.previewUrl);
-    console.log("New audio created:", newAudio);
-    newAudio.addEventListener('error', (e) => {
-      console.error("Audio Error:", e);
-    });
-    newAudio.play().then(() => {
-      console.log("Playback started");
-    }).catch(error => {
-      console.error("Playback Error:", error);
-    });
-    setAudio(newAudio);
   };
 
   return (
@@ -119,7 +123,7 @@ const Palette = ({ filter }) => {
             <h3>High</h3>
           </div>
           {rectangles.map(rect => (
-            <Rectangle key={rect.id} rect={rect} onMouseDown={handleMouseDown} onPlaySong={handlePlaySong} />
+            <Rectangle key={rect.id} rect={rect} onMouseDown={handleMouseDown} onPlaySong={handlePlaySong} playingSong={playingSong} />
           ))}
     </div>
   );
