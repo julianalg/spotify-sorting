@@ -2,24 +2,45 @@ import React, { useState, useEffect } from 'react';
 import Rectangle from './Rectangle';
 import './Palette.css';
 
-const Palette = () => {
+const Palette = ({ filter }) => {
   const [rectangles, setRectangles] = useState([]);
+  const [originalRectangles, setOriginalRectangles] = useState([]);
   const [dragging, setDragging] = useState(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [audio, setAudio] = useState(null);
+  const [isSorting, setIsSorting] = useState(false);
 
   useEffect(() => {
-    setRectangles([
-      { id: 1, x: 10, y: 10, width: 300, height: 100, color: '#ff0000', group: 1, song: { title: 'Bad Guy', artist: 'Billie Eilish', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-Iz3wv4AIVC5XV-n9NhmUffdYj5JnlJou1A&s', previewUrl: '/song1.mp3' } },
-      { id: 2, x: 10, y: 120, width: 300, height: 100, color: '#00ff00', group: 1, song: { title: 'Blinding Lights', artist: 'The Weeknd', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFQgiX0FcuWwZzn85SlbrtQnwnMgAdgWfm7A&s', previewUrl: '/song2.mp3' } },
-      { id: 3, x: 320, y: 10, width: 300, height: 100, color: '#0000ff', group: 2, song: { title: 'Uptown Funk (ft. Bruno Mars)', artist: 'Mark Ronson', albumArt: 'https://i.scdn.co/image/ab67616d0000b273e419ccba0baa8bd3f3d7abf2', previewUrl: '/song3.mp3' } },
-      { id: 4, x: 320, y: 120, width: 300, height: 100, color: '#ffff00', group: 2, song: { title: 'Don\'t Start Now', artist: 'Dua Lipa', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjh-LepHUfMI0dYEGxP7lbdFa6f2USO-hppg&s', previewUrl: '/song4.mp3' } },
-      { id: 5, x: 630, y: 10, width: 300, height: 100, color: '#ff00ff', group: 3, song: { title: 'Driver\'s License', artist: 'Olivia Rodrigo', albumArt: 'https://upload.wikimedia.org/wikipedia/en/0/09/Drivers_License_by_Olivia_Rodrigo.png', previewUrl: '/song5.mp3' } },
-      { id: 6, x: 630, y: 120, width: 300, height: 100, color: '#00ffff', group: 3, song: { title: 'You Belong With Me (Taylor\'s Version)', artist: 'Taylor Swift', albumArt: 'https://i.scdn.co/image/ab67616d0000b273a48964b5d9a3d6968ae3e0de', previewUrl: '/song6.mp3' } },
-    ]);
+    const initialRectangles = [
+      { id: 1, x: 10, y: 10, width: 300, height: 100, color: '#ff0000', group: 1, song: { title: 'Bad Guy', artist: 'Billie Eilish', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-Iz3wv4AIVC5XV-n9NhmUffdYj5JnlJou1A&s', previewUrl: '/song1.mp3', danceability: 0.701, acoustiness: 0.328, loudness: -10.97 } },
+      { id: 2, x: 10, y: 120, width: 300, height: 100, color: '#00ff00', group: 1, song: { title: 'Blinding Lights', artist: 'The Weeknd', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFQgiX0FcuWwZzn85SlbrtQnwnMgAdgWfm7A&s', previewUrl: '/song2.mp3', danceability: 0.8, acoustiness: 0.05, loudness: -5.0 } },
+      { id: 3, x: 320, y: 10, width: 300, height: 100, color: '#0000ff', group: 2, song: { title: 'Uptown Funk (ft. Bruno Mars)', artist: 'Mark Ronson', albumArt: 'https://i.scdn.co/image/ab67616d0000b273e419ccba0baa8bd3f3d7abf2', previewUrl: '/song3.mp3', danceability: 0.85, acoustiness: 0.01, loudness: -3.0 } },
+      { id: 4, x: 320, y: 120, width: 300, height: 100, color: '#ffff00', group: 2, song: { title: 'Don\'t Start Now', artist: 'Dua Lipa', albumArt: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjh-LepHUfMI0dYEGxP7lbdFa6f2USO-hppg&s', previewUrl: '/song4.mp3', danceability: 0.793, acoustiness: 0.0123, loudness: -4.521 } },
+      { id: 5, x: 630, y: 10, width: 300, height: 100, color: '#ff00ff', group: 3, song: { title: 'Driver\'s License', artist: 'Olivia Rodrigo', albumArt: 'https://upload.wikimedia.org/wikipedia/en/0/09/Drivers_License_by_Olivia_Rodrigo.png', previewUrl: '/song5.mp3', danceability: 0.4, acoustiness: 0.7, loudness: -8.0 } },
+      { id: 6, x: 630, y: 120, width: 300, height: 100, color: '#00ffff', group: 3, song: { title: 'You Belong With Me (Taylor\'s Version)', artist: 'Taylor Swift', albumArt: 'https://i.scdn.co/image/ab67616d0000b273a48964b5d9a3d6968ae3e0de', previewUrl: '/song6.mp3', danceability: 0.65, acoustiness: 0.1, loudness: -6.0 } },
+    ];
+    setRectangles(initialRectangles);
+    setOriginalRectangles(initialRectangles);
   }, []);
 
+  useEffect(() => {
+    if (filter) {
+      setIsSorting(true);
+      const sortedRectangles = [...rectangles].sort((a, b) => b.song[filter] - a.song[filter]);
+      const newRectangles = sortedRectangles.map((rect, index) => ({
+        ...rect,
+        x: 10 + (index % 3) * 310,
+        y: 10 + Math.floor(index / 3) * 110,
+      }));
+      setRectangles(newRectangles);
+    } else {
+      setIsSorting(false);
+      setRectangles(originalRectangles);
+    }
+  }, [filter, originalRectangles]);
+
   const handleMouseDown = (e, id) => {
+    if (isSorting) return;
     const rect = rectangles.find(r => r.id === id);
     setDragging(id);
     setOffset({
