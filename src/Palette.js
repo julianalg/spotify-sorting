@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Rectangle from './Rectangle';
 import './Palette.css';
 
@@ -9,6 +9,7 @@ const Palette = ({ filter }) => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [audio, setAudio] = useState(null);
   const [isSorting, setIsSorting] = useState(false);
+  const paletteRef = useRef(null);
 
   useEffect(() => {
     const initialRectangles = [
@@ -26,12 +27,34 @@ const Palette = ({ filter }) => {
   useEffect(() => {
     if (filter) {
       setIsSorting(true);
-      const sortedRectangles = [...rectangles].sort((a, b) => b.song[filter] - a.song[filter]);
-      const newRectangles = sortedRectangles.map((rect, index) => ({
-        ...rect,
-        x: 10 + (index % 3) * 310,
-        y: 10 + Math.floor(index / 3) * 110,
-      }));
+      const paletteWidth = paletteRef.current ? paletteRef.current.offsetWidth : 0;
+      const sectionWidth = paletteWidth / 3;
+      const yOffsets = [50, 50, 50];
+
+      let values = rectangles.map(r => r.song[filter]);
+      let minVal = Math.min(...values);
+      let maxVal = Math.max(...values);
+
+      const newRectangles = rectangles.map(rect => {
+        let value = rect.song[filter];
+        if (filter === 'loudness') {
+          value = (value - minVal) / (maxVal - minVal);
+        }
+
+        let section = 0;
+        if (value >= 0.66) {
+          section = 2;
+        } else if (value >= 0.33) {
+          section = 1;
+        }
+
+        const x = (section * sectionWidth) + (sectionWidth - rect.width) / 2;
+        const y = yOffsets[section];
+        yOffsets[section] += rect.height + 10;
+
+        return { ...rect, x, y };
+      });
+
       setRectangles(newRectangles);
     } else {
       setIsSorting(false);
@@ -85,15 +108,15 @@ const Palette = ({ filter }) => {
   };
 
   return (
-    <div className="palette" onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
+    <div className="palette" ref={paletteRef} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp}>
           <div className="background-section" style={{ backgroundColor: '#cccccc' }}>
-            <h3>Group 1</h3>
+            <h3>Low</h3>
           </div>
           <div className="background-section" style={{ backgroundColor: '#dddddd' }}>
-            <h3>Group 2</h3>
+            <h3>Middle</h3>
           </div>
           <div className="background-section" style={{ backgroundColor: '#eeeeee' }}>
-            <h3>Group 3</h3>
+            <h3>High</h3>
           </div>
           {rectangles.map(rect => (
             <Rectangle key={rect.id} rect={rect} onMouseDown={handleMouseDown} onPlaySong={handlePlaySong} />
